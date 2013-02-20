@@ -1,0 +1,360 @@
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) FIRST 2008. All Rights Reserved.                             */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
+
+package edu.wpi.first.wpilibj.templates;
+import edu.wpi.first.wpilibj.*;
+
+
+/**
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to each mode, as described in the SimpleRobot
+ * documentation. If you change the name of this class or the package after
+ * creating this project, you must also update the manifest file in the resource
+ * directory.
+ */
+public class RobotTemplate extends SimpleRobot
+{
+    String modeString;
+
+    DashboardData dashboardData;
+
+    //For sending dashboard information
+
+    String blockString = "BBBBBBBBBBB";                 // Used to communicate image data to dashboard
+    String theBlobString = "FFFFFFFFFFFFFFFFFF";        // Dito
+
+
+    Joystick rightStick ;// new Joystick(Constants.USB_LeftJoyStickPort);
+    Joystick leftStick ;// new Joystick(Constants.USB_RightJoyStickPort);
+    Joystick operatorStick ;// new Joystick(Constants.USB_OperatorJoyStickPort);
+
+    AnalogChannel rotationSensor ;// new AnalogChannel(Constants.ANALOG_RackPinionEncoder);
+    AnalogChannel motorcurrent 	;// new AnalogChannel(Constants.ANALOG_MotorCurrentPort);
+
+    // Please note that SW BOT had left Front & left back reversed, others were forward
+    SmartEncoder leftFrontEncoder	;// new SmartEncoder(Constants.DIO_LeftFrontEncoderPortA, Constants.DIO_LeftFrontEncoderPortB, true);
+    SmartEncoder rightFrontEncoder	;// new SmartEncoder(Constants.DIO_RightFrontEncoderPortA, Constants.DIO_RightFrontEncoderPortB, false);
+    SmartEncoder leftBackEncoder	;// new SmartEncoder(Constants.DIO_LeftBackEncoderPortA, 	Constants.DIO_LeftBackEncoderPortB, true);
+    SmartEncoder rightBackEncoder	;// new SmartEncoder(Constants.DIO_RightBackEncoderPortA, Constants.DIO_RightBackEncoderPortB,  false);
+    
+ 
+    SmartMotor leftFrontMotor ;// new SmartMotor(Constants.PWM_LeftFrontMotorPort, leftFrontEncoder, true, Constants.motorAccelTime);
+    SmartMotor rightFrontMotor ;// new SmartMotor(Constants.PWM_RightFrontMotorPort, rightFrontEncoder, false, Constants.motorAccelTime);
+    SmartMotor leftBackMotor ;// new SmartMotor(Constants.PWM_LeftBackMotorPort, leftBackEncoder, true, Constants.motorAccelTime);
+    SmartMotor rightBackMotor ;// new SmartMotor(Constants.PWM_RightBackMotorPort, rightBackEncoder, false, Constants.motorAccelTime);
+
+    SmartMotor steeringMotor    ;// new SmartMotor(Constants.PWM_RackPinionMotorPort, null, true, 0);
+
+    SmartMotor ballHandlerMotor ;// new SmartMotor(Constants.PWM_BallHandlerMotorPort, null, true, 0);
+    SmartMotor smartBallDoorMotor    ;// new SmartMotor(Constants.PWM_BallDoorMotorPort,  null, true, 0);
+
+    SmartAccelerometer accelerometerX 	;// new Accelerometer(Constants.ANALOG_AccelerometerXPort);
+    SmartAccelerometer accelerometerY 	;// new Accelerometer(Constants.ANALOG_AccelerometerYPort);
+
+
+    Servo cameraPanServo ;// new Servo(Constants.PWM_CameraPanServoPort);
+    Servo cameraTiltServo ;// new Servo(Constants.PWM_CameraTiltServoPort);
+
+    MenuControl menuControl ;// new MenuControl(rightStick);                            // For Managing menu interface
+
+    Gyro gyro ;// new Gyro(Constants.ANALOG_GyroPort);
+
+    GenesisDrive genesisDrive ;// new GenesisDrive(leftStick,  rightStick,
+
+    BallLauncher ballLauncher ;// new BallLauncher(ballHandlerMotor, smartBallDoorMotor, rightStick);
+    
+    // Create autonomous obkect
+    Autonomous autonomous ;         // new Autonomous(genesisDrive);
+    // Create BlockyImage object
+    BlockyImage blockyImage ;     // new BlockyImage();                                        //tbd
+
+    RobotServiceThread serviceThread ;      // new RobotServiceThread(this);
+
+    TwilightZoneThread twilightZoneThreead;
+
+
+    public RobotTemplate(){
+            System.out.println("RobotTemplate()------------------------------------");
+            rightStick	=	new	Joystick(Constants.USB_LeftJoyStickPort);
+            leftStick	=	new	Joystick(Constants.USB_RightJoyStickPort);
+            operatorStick	=	new	Joystick(Constants.USB_OperatorJoyStickPort);
+
+            while(leftStick.getRawButton(3) == false && DriverStation.getInstance().isDisabled()){
+                Timer.delay(1.0); // wait 1 seconds
+                System.out.println("Waiting for things to Start");
+            }
+
+            System.out.println("Construction and Initialization in progress------------------------------------");
+
+            getWatchdog().setEnabled(false);
+                        //drivetrain = new RobotDrive(2, 5); // create RobotDriv
+
+            dashboardData	=	new	DashboardData();
+
+            //	For	sending	dashboard	information
+
+
+
+            rotationSensor	=	new	AnalogChannel(Constants.ANALOG_RackPinionEncoder);
+            motorcurrent	=	new	AnalogChannel(Constants.ANALOG_MotorCurrentPort);
+
+            //Please	note	that	SW	BOT	had	left	Front	&	left	back	reversed,	others	were	forward
+            leftFrontEncoder	=	new	SmartEncoder(Constants.DIO_LeftFrontEncoderPortA,	Constants.DIO_LeftFrontEncoderPortB,	true);
+            rightFrontEncoder	=	new	SmartEncoder(Constants.DIO_RightFrontEncoderPortA,	Constants.DIO_RightFrontEncoderPortB,	false);
+            leftBackEncoder	=	new	SmartEncoder(Constants.DIO_LeftBackEncoderPortA,	Constants.DIO_LeftBackEncoderPortB,	true);
+            rightBackEncoder	=	new	SmartEncoder(Constants.DIO_RightBackEncoderPortA,	Constants.DIO_RightBackEncoderPortB,	false);
+
+            leftFrontMotor	=	new	SmartMotor(Constants.PWM_LeftFrontMotorPort,	leftFrontEncoder,	true,	Constants.motorAccelTime);
+            rightFrontMotor	=	new	SmartMotor(Constants.PWM_RightFrontMotorPort,	rightFrontEncoder,	false,	Constants.motorAccelTime);
+            leftBackMotor	=	new	SmartMotor(Constants.PWM_LeftBackMotorPort,	leftBackEncoder,	true,	Constants.motorAccelTime);
+            rightBackMotor	=	new	SmartMotor(Constants.PWM_RightBackMotorPort,	rightBackEncoder,	false,	Constants.motorAccelTime);
+
+            steeringMotor	=	new	SmartMotor(Constants.PWM_RackPinionMotorPort,	null,	true,	0);
+
+            ballHandlerMotor	=	new	SmartMotor(Constants.PWM_BallHandlerMotorPort,	null,	true,	0);
+            smartBallDoorMotor	=	new	SmartMotor(Constants.PWM_BallDoorMotorPort,	null,	true,	0);
+
+            accelerometerX	=	new	SmartAccelerometer(Constants.ANALOG_AccelerometerXPort);
+            accelerometerY	=	new	SmartAccelerometer(Constants.ANALOG_AccelerometerYPort);
+
+
+            cameraPanServo	=	new	Servo(Constants.PWM_CameraPanServoPort);
+            cameraTiltServo	=	new	Servo(Constants.PWM_CameraTiltServoPort);
+
+            menuControl	=	new	MenuControl(rightStick);	//	For	Managing	menu	interface
+
+            gyro	=	new	Gyro(Constants.ANALOG_GyroPort);
+            genesisDrive=	new	GenesisDrive(leftStick,	rightStick,
+                                        leftFrontMotor, rightFrontMotor, leftBackMotor,	rightBackMotor,	steeringMotor,
+                                        rotationSensor, menuControl, gyro, 1.0);
+            ballLauncher =	new	BallLauncher(ballHandlerMotor,	smartBallDoorMotor,	rightStick);
+
+            //Create	autonomous	obkect
+            autonomous	=	new	Autonomous(genesisDrive);
+
+            //Create	BlockyImage	object
+            blockyImage	=	new	BlockyImage();                          //tbd
+
+            serviceThread =     new	RobotServiceThread(this);
+            twilightZoneThreead = new    TwilightZoneThread(this);
+
+
+    }
+    /**
+     * This function inits all hardware
+     */
+    public void initialize()
+    {
+
+        System.out.println("initialize called");
+        gyro.reset();
+        cameraTiltServo.setAngle(.05);
+        cameraPanServo.setAngle(0.401);
+
+        leftFrontEncoder.reset();
+        rightFrontEncoder.reset();
+	leftBackEncoder.reset();
+	rightBackEncoder.reset();
+	//rackPinionEncoder->Reset();
+
+	leftFrontEncoder.start();
+	rightFrontEncoder.start();
+	leftBackEncoder.start();
+	rightBackEncoder.start();
+
+
+        // BlockyImageInit();
+	
+	// TwilightZoneInit();
+
+        serviceThread.start();
+
+  }
+
+  public void setNextResolution()
+  {
+        // TBD Stubed for now while portit is in progress
+  }
+
+
+
+    /**
+     * This function is called once each time the robot enters autonomous mode.
+     */
+    public void autonomous()
+    {
+       System.out.println("autonomous called");
+       initialize();
+    }
+    /**
+     * This function is called once each time the robot enters operator control.
+     */
+    public void operatorControl()
+    {
+        System.out.println("Made it to Operator Control");
+        initialize();
+
+
+
+	//downTimer.StartTimer(120.0f);				// Start 15 Second Timer
+        
+	genesisDrive.SetDriverMode(true); // set for operator mode control
+	cameraTiltServo.set(0.624);
+
+        //blockyImage.SelectBallColors();                                           //tbd
+	while (true)
+	{
+                Timer.delay(0.010f);
+
+               	// THE #2 BUTTON ON THE LEFT JOYSTICK CURRENTLY BREAKS THE CAMERA etc, IT NEEDS DEBUGGING, ASK ANSEL [OLD]
+		if(leftStick.getButton(Joystick.ButtonType.kTop)) {
+			setNextResolution();
+		}
+		if(rightStick.getButton(Joystick.ButtonType.kTop))
+			modeString = "Hello";
+		else
+			modeString = "Goodbye..";
+
+//		if(rightStick->GetButton(Joystick::kTopButton)) {
+//		   ScreenShot();
+//		   Wait(.5);
+//		}
+
+                menuControl.PeriodicService();
+		ballLauncher.OperateBallCollector();
+
+		// TBD Need a better home  -->SmartMotor.SetCollectData(rightStick->GetButton(Joystick::kTriggerButton));
+
+		//UpdateDashboard ();
+
+	}
+         
+    }
+
+  
+    public void PeriodicService()
+    {
+        SmartMotor.MotorTask();
+
+        accelerometerX.PeriodicService();
+	accelerometerY.PeriodicService();
+
+        genesisDrive.PeriodicService();
+ 	//if(SmartMotor::DoCollectData() && mainRobot)
+			// mainRobot->PrintData();
+    }
+
+   public void TwilightZonePeriodicService()
+   {
+        menuControl.PeriodicService();
+	UpdateDashboard();
+    }
+
+     public void UpdateDashboard()
+
+     {
+
+                int   menuIndex = menuControl.GetMenuValue();
+                int choiceIndex = menuControl.GetChoiceValue();
+
+                float lEncoder = 0f, rEncoder=0f, lSpeed=0f, rSpeed=0f, lAccel=0f, rAccel=0f;
+
+                leftFrontEncoder.GetData(lEncoder, lSpeed, lAccel);
+                rightFrontEncoder.GetData(rEncoder, rSpeed, rAccel);
+
+                boolean isTankMode = genesisDrive.IsTankDrive();
+               
+                float doorSpeed = 0f, ballHandlerSpeed = 0f;
+                ballLauncher.GetSpeeds(doorSpeed,ballHandlerSpeed);
+
+                // TBDfloat timeLeftInMatch = downTimer.GetRemainingTime();			// Start 15 Second Timer
+                float timeLeftMatch = 0.66f;
+        //	smartBallDoorMotor->Set(doorSpeed);
+        //	smartBallHandlerMotor->Set(ballHandlerSpeed);
+
+                DriverStation ds = DriverStation.getInstance();
+
+                dashboardData.reset();                                      // Let's fill the buffer from scratch
+                dashboardData.add(ds.getBatteryVoltage());                  // 0 Send Battery Voltage
+                dashboardData.add(!ds.isEnabled());                          // 1 Send enabled/disabled
+
+                dashboardData.add(ds.isAutonomous());                       // 2 Send autonomous/teleoperated
+                dashboardData.add(false);                                   // 3 Send isManualOverride
+                dashboardData.add("This is mode string");                   // 4 Send mode string
+                dashboardData.add((rSpeed+lSpeed)/2);                       // 5 send average speed
+                dashboardData.add(gyro.getAngle());                         // 6 send current gyro heading
+                dashboardData.add(22.2);                                    // 7 Send genesisRobot.GetSteeringPositionDegrees()
+                dashboardData.add(menuIndex);                               // 8 Send current menu index
+                dashboardData.add(choiceIndex);                             // 9 Send current choice index
+                dashboardData.add(isTankMode);                              // 10 Send tank vs. Ackerman (boolean)
+                dashboardData.add(doorSpeed);                               // 12 Send current door speed (float)
+                dashboardData.add(ballHandlerSpeed);                        // 13 Send current hall handler speed (float)
+                dashboardData.add(blockString);                             // 14 Send the block string
+                dashboardData.add(timeLeftMatch);                           // 15 Send the time remaining
+                dashboardData.addBlobData();                                // 16 Send compressed image data...
+
+
+                // Perform run length encoding on encoded & packed data stream
+
+       //#if 1
+         //       (void)EncodeBuffer((theBlobString[updateCount&1]), encodedBinaryData, 701);
+
+           //     dashboard.Printf("%s\t%s", str, encodedBinaryData);
+
+               dashboardData.SendData();
+
+        }
+
+     private class RobotServiceThread extends Thread {
+
+            RobotTemplate robot;
+
+            RobotServiceThread(RobotTemplate r) {
+                robot = r;
+            }
+
+            public void run() {
+                while (true) {
+                        robot.PeriodicService();
+                    try {
+                        Thread.sleep(20);
+                    }
+                    catch (InterruptedException e) {
+
+                    }
+                }
+            }
+        }
+      
+
+         private class TwilightZoneThread extends Thread {
+
+            RobotTemplate robot;
+
+            TwilightZoneThread(RobotTemplate r) {
+                robot = r;
+                start();
+            }
+
+            public void run() {
+                while (true) {
+                        robot.TwilightZonePeriodicService();
+                    try {
+                        Thread.sleep(40);
+                    }
+                    catch (InterruptedException e) {
+
+                    }
+                }
+            }
+        }
+
+
+}
+
+
+
